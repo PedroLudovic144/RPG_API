@@ -73,9 +73,11 @@ namespace RpgApi.Controllers
             }
         }
         [HttpGet("GetByClasse/{idClasse}")]
-        public IActionResult GetByClasse(int idClasse)
+        public IActionResult GetByClasse(int IdClasse)
         {
-            var lista = personagens.Where(p => (int)p.Classe == idClasse).ToList();
+            ClasseEnum tipoEnum = (ClasseEnum)IdClasse;
+
+            var lista = personagens.Where(p => (int)p.Classe == IdClasse).ToList();
             return Ok(lista);
         }
     }
