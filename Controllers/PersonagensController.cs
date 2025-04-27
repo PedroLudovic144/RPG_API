@@ -9,29 +9,100 @@ using RpgApi.Models;
 
 namespace RPG_API.Controllers
 {
-    
+    [ApiController] 
+    [Route("[controller]")] 
     public class PersonagensController: ControllerBase
-    {
+     {
         private readonly DataContext _context;
+
 
         public PersonagensController(DataContext context)
         {
             _context = context;
         }
-        [HttpGet("{id}")]
+
+        [HttpGet("{id}")] 
         public async Task<IActionResult> GetSingle(int id)
         {
             try
             {
-                Personagem p = await _context.TB_PERSONAGENS
-                    .FirstOrDefaultAsync(pBusca => pBusca.Id == id);
-                
+                Personagem? p = await _context.TB_PERSONAGENS
+                .Include(p => p.Arma)
+                .Include(p => p.PersonagemHabilidades)
+                    .ThenInclude(ps => ps.Habilidade)
+                .Include(p => p.Usuario) 
+                .FirstOrDefaultAsync(pBusca => pBusca.Id == id);
+
                 return Ok(p);
-            }catch (System.Exception ex)
+            }
+            catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.Message + " - " + ex.InnerException);
             }
         }
-        
+
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> Get()
+        {
+            try
+            {
+                List<Personagem> lista = await _context.TB_PERSONAGENS.ToListAsync();
+                return Ok(lista);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message + " - " + ex.InnerException);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add(Personagem novoPersonagem)
+        {
+            try
+            {
+                await _context.TB_PERSONAGENS.AddAsync(novoPersonagem);
+                await _context.SaveChangesAsync();
+
+                return Ok(novoPersonagem.Id);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message + " - " + ex.InnerException);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update(Personagem novoPersonagem)
+        {
+            try
+            {
+                _context.TB_PERSONAGENS.Update(novoPersonagem);
+                int linhasAfetadas = await _context.SaveChangesAsync();
+
+                return Ok(linhasAfetadas);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message + " - " + ex.InnerException);
+            }
+        }
+
+        [HttpDelete("PersonagemDelete/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                Personagem? pRemover = await _context.TB_PERSONAGENS.FirstOrDefaultAsync(p => p.Id == id);
+
+                _context.TB_PERSONAGENS.Remove(pRemover);
+                int linhaAfetadas = await _context.SaveChangesAsync();
+                return Ok(linhaAfetadas);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message + " - " + ex.InnerException);
+            }
+        }
     }
 }

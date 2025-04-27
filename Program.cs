@@ -3,19 +3,26 @@ using RpgApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
-   options.UseSqlServer(builder.Configuration.GetConnectionString("ConexaoSomee"));
+   options.UseSqlServer(builder.Configuration.GetConnectionString("ConexaoCasaPedro"));
 });
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    });
+
+
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
